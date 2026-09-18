@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI智能体管理中心</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航 -->
+        <header class="header">
+            <h1>🤖 AI智能体管理中心</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showCreateModal()">+ 创建智能体</button>
+                <button class="btn btn-secondary" onclick="showModelConfig()">⚙️ 模型配置</button>
+            </div>
+        </header>
+
+        <!-- 统计卡片 -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num" id="agentCount">0</div>
+                <div class="stat-label">智能体数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="activeCount">0</div>
+                <div class="stat-label">运行中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="modelStatus">未配置</div>
+                <div class="stat-label">模型状态</div>
+            </div>
+        </div>
+
+        <!-- 智能体列表 -->
+        <div class="agents-grid" id="agentsGrid">
+            <div class="empty-state">
+                <div class="empty-icon">🎭</div>
+                <div class="empty-text">还没有智能体</div>
+                <div class="empty-sub">点击上方「创建智能体」开始</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建/编辑智能体弹窗 -->
+    <div class="modal" id="agentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">创建智能体</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="agentId">
+                <div class="form-group">
+                    <label>智能体名称</label>
+                    <input type="text" id="agentName" placeholder="给智能体起个名字">
+                </div>
+                <div class="form-group">
+                    <label>头像emoji</label>
+                    <input type="text" id="agentAvatar" placeholder="如：🤖" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <label>人设设定（System Prompt）</label>
+                    <textarea id="agentPrompt" rows="6" placeholder="定义智能体的性格、角色、行为规则..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>默认模型</label>
+                    <select id="agentModel">
+                        <option value="">使用全局配置</option>
+                        <option value="ollama:llama3">Ollama - llama3</option>
+                        <option value="ollama:qwen">Ollama - qwen</option>
+                        <option value="ollama:deepseek">Ollama - deepseek</option>
+                        <option value="api:openai">API - OpenAI</option>
+                        <option value="api:claude">API - Claude</option>
+                        <option value="api:deepseek">API - DeepSeek</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>QQ群白名单（留空表示所有群可用）</label>
+                    <input type="text" id="agentGroups" placeholder="多个群号用逗号分隔，如：123456,789012">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>触发关键词</label>
+                        <input type="text" id="agentTrigger" placeholder="如：@bot">
+                    </div>
+                    <div class="form-group">
+                        <label>最大对话轮数</label>
+                        <input type="number" id="agentMaxTurns" value="20" min="1" max="100">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveAgent()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模型配置弹窗 -->
+    <div class="modal" id="modelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 模型配置</h2>
+                <button class="modal-close" onclick="closeModelModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>🤖 Ollama 本地模型</h3>
+                    <div class="form-group">
+                        <label>Ollama 地址</label>
+                        <input type="text" id="ollamaUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+                    </div>
+                    <div class="form-group">
+                        <label>可用模型（每行一个）</label>
+                        <textarea id="ollamaModels" rows="4" placeholder="llama3
+qwen
+deepseek-r1"></textarea>
+                    </div>
+                    <button class="btn btn-small" onclick="testOllama()">🧪 测试连接</button>
+                    <span id="ollamaStatus" class="status-msg"></span>
+                </div>
+                <div class="config-section">
+                    <h3>🌐 API 模型</h3>
+                    <div class="form-group">
+                        <label>API 类型</label>
+                        <select id="apiType" onchange="toggleApiFields()">
+                            <option value="openai">OpenAI 兼容</option>
+                            <option value="claude">Claude (Anthropic)</option>
+                            <option value="deepseek">DeepSeek</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API 地址</label>
+                        <input type="text" id="apiUrl" placeholder="https://api.openai.com/v1/chat/completions">
+                    </div>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="apiKey" placeholder="sk-...">
+                    </div>
+                    <div class="form-group">
+                        <label>默认模型</label>
+                        <input type="text" id="apiDefaultModel" placeholder="gpt-4o-mini">
+                    </div>
+                    <button class="btn btn-small" onclick="testApi()">🧪 测试连接</button>
+                    <span id="apiStatus" class="status-msg"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModelModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveModelConfig()">保存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除弹窗 -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content modal-small">
+            <div class="modal-header">
+                <h2>⚠️ 确认删除</h2>
+                <button class="modal-close" onclick="closeDeleteModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除智能体「<span id="deleteName"></span>」吗？此操作不可恢复。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# NoneBot2 配置文件
+# AI智能体 QQ 接入模块
+
+import os
+
+# NoneBot 运行配置
+SUPERUSERS: list = os.getenv("SUPERUSERS", "").split(",") if os.getenv("SUPERUSERS") else ["123456"]
+# 123456 替换为你的QQ号作为超级管理员
+
+COMMAND_START: list = {""}
+HOST: str = os.getenv("HOST", "0.0.0.0")
+PORT: int = int(os.getenv("PORT", "8080"))
+
+# 适配器配置
+# 使用 OneBot V11 协议（兼容 go-cqhttp / Lagrange / Mirai 等）
+DRIVER: str = "nonebot.drivers.httpx"
+
+# 自定义配置
+MODEL_CONFIG_PATH: str = os.getenv("MODEL_CONFIG_PATH", "./config/model_config.json")
+AGENTS_DATA_PATH: str = os.getenv("AGENTS_DATA_PATH", "./config/agents.json")
+OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")

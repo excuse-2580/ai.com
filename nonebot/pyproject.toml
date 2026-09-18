@@ -1,0 +1,21 @@
+[project]
+name = "ai-agent-bot"
+version = "1.0.0"
+description = "AI智能体 QQ机器人 - NoneBot2"
+requires-python = ">=3.10"
+
+dependencies = [
+    "nonebot2>=2.0.0",
+    "nonebot-adapter-onebot>=2.0.0",
+    "httpx>=0.25.0",
+]
+
+[tool.nonebot]
+plugins = []
+plugin_dirs = ["."]
+adapters = [
+    { driver = "nonebot.drivers.httpx" }
+]
+
+[tool.nonebot.adapter.onebot]
+type = "onebot"
